@@ -99,8 +99,9 @@ int main(int argc, char** argv) {
         auto getYYYYMMDD_HHMMSS = [](){
           cluon::data::TimeStamp now = cluon::time::now();
 
-          const long int _seconds = now.seconds();
-          struct tm *tm = localtime(&_seconds);
+          long int _seconds = now.seconds();
+          std::time_t _secondsTemp = static_cast<std::time_t>(_seconds);
+          struct tm *tm = localtime(&_secondsTemp);
 
           uint32_t year = (1900 + tm->tm_year);
           uint32_t month = (1 + tm->tm_mon);
