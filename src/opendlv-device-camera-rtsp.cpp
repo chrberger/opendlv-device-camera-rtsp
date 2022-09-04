@@ -22,7 +22,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
+#include "pping.h"
+#include "liveMedia.hh"
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
 #include "H264VideoRTPSource.hh"
@@ -95,6 +99,19 @@ int main(int argc, char** argv) {
         const uint32_t ID{(commandlineArguments.count("id") != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
         const bool TRANSPORT_OVER_TCP{static_cast<bool>((commandlineArguments.count("transport") != 0) ? static_cast<bool>(std::stoi(commandlineArguments["transport"]) == 1) : 0)};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
+
+        // Try to ping host to avoid creating empty recording files.
+        {
+          auto list  = stringtoolbox::split(URL, '/');
+          if (list.size() > 2) {
+            std::string hostToPing = list[2];
+            retCode = pping_easy_ping(hostToPing.c_str());
+            if (0 != retCode) {
+              std::cerr << "[opendlv-video-camera-rtsp]: Failed to ping " << hostToPing << "." << std::endl;
+              return retCode;
+            }
+          }
+        }
 
         auto getYYYYMMDD_HHMMSS = [](){
           cluon::data::TimeStamp now = cluon::time::now();
